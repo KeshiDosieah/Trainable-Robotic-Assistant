@@ -8,40 +8,25 @@ from std_msgs.msg import String
 from Tkinter import*
 import ttk
 import tkMessageBox
+import numpy as np
+import os
 
 from PIL import ImageTk, Image
 import threading
 
 bridge = CvBridge()
-global panel
-panel = None
+global panel2, logged_in, img_data, final_img
+logged_in = False
+panel2 = None
+final_img = None
+img_data = None
 
-
-class Login:
-    def __init__(self, root):
-        self.root=root
-        self.root.title("Login System")
-        self.root.geometry("1200x600+100+50")
-        self.root.resizable(False, False)
-        # backgound Image
-        self.bg = ImageTk.PhotoImage(file="background.jpg")
-        self.bg_image = Label(self.root, image = self.bg).place(x=0,y=0,relwidth=1,relheight=1)
-
-        #login frane
-        self.Frame_login = Frame(self.root, bg="black")
-        self.Frame_login.place(x=70,y=150,height=340,width=500)
-
-        title = Label(self.Frame_login, text="WELCOME !", font=("Impact",25,"bold"),fg="#8ddbf0", bg="black").place(x=150,y=30)
-
-        user_label = Label(self.Frame_login, text = "Username", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=90,y=100)
-        self.user = Entry(self.Frame_login, font=("times new roman",15), bg="lightgray")
-        self.user.place(x=90,y=140,width=320,height=35)
-
-        password_label = Label(self.Frame_login, text = "Password", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=90,y=190)
-        self.password = Entry(self.Frame_login, font=("times new roman",15), bg="lightgray")
-        self.password.place(x=90,y=230,width=320,height=35)
-
-        self.Login_btn = Button(self.Frame_login, command=self.login_function, text= "Log In", bg="#8ddbf0", fg="black", font=("times new roman",20)).place(x=175, y=285, width=150, height=35)
+class Login(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self._is_running = True
+        self.daemon = True
+        self.start()
 
     def createOval(self, r, c):
         circleCanvas = Canvas(self.tab1, width=20, height=20)
@@ -50,7 +35,7 @@ class Login:
         return [oval,circleCanvas]
 
     def login_function(self):
-        global panel
+        global panel2, logged_in, final_img
         if self.user.get()=="" or self.password.get()=="":
             # tkMessageBox.showerror("Error","All fields are required", parent=self.root)
         # elif self.user.get() != "k" or self.password.get() != "1":
@@ -64,14 +49,14 @@ class Login:
             # self.root.pack_forget()
             self.Frame_login.destroy()
 
-            self.tab_parent = ttk.Notebook(root)
+            self.tab_parent = ttk.Notebook(self.root)
             self.tab1 = ttk.Frame(self.tab_parent)
-            tab2 = ttk.Frame(self.tab_parent)
-            tab3 = ttk.Frame(self.tab_parent)
+            self.tab2 = ttk.Frame(self.tab_parent)
+            self.tab3 = ttk.Frame(self.tab_parent)
 
             self.tab_parent.add(self.tab1, text="Feedback")
-            self.tab_parent.add(tab2, text="Command")
-            self.tab_parent.add(tab3, text="Training")
+            self.tab_parent.add(self.tab2, text="Command")
+            self.tab_parent.add(self.tab3, text="Training")
             self.tab_parent.pack(expand=1, fill='both')
 
             # Progress bar widget
@@ -112,17 +97,31 @@ class Login:
             print(self.OvalPos)
 
             # circleCanvas1.itemconfig(self.ir1,fill='red')
+            ttk.Label(self.tab2, text="Command the robot to fetch the following").grid(column=0, row=0, padx=1, pady=1)
 
-            ttk.Label(tab2, text="This is Tab 2").grid(column=0, row=0, padx=1, pady=1)
-            ttk.Label(tab3, text="This is Tab 3").grid(column=0, row=0, padx=1, pady=1)
+            # objects = ["object1", "object2"]
+            #
+            # for i in objects:
+            #     self.objects[i] = Button(self.tab2, text=objects[i])
+            #command tab
+            self.object1 = Button(self.tab2, text= "Object 1", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=30, width=150, height=35)
+            self.object2 = Button(self.tab2, text= "Object 2", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=75, width=150, height=35)
+            self.object3 = Button(self.tab2, text= "Object 3", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=120, width=150, height=35)
+            self.object4 = Button(self.tab2, text= "Object 4", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=165, width=150, height=35)
+            self.object5 = Button(self.tab2, text= "Object 5", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=210, width=150, height=35)
+            self.object6 = Button(self.tab2, text= "Object 6", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=255, width=150, height=35)
+            self.object7 = Button(self.tab2, text= "Object 7", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=300, width=150, height=35)
 
+            #training tab
+            ttk.Label(self.tab3, text="Train your robot").grid(column=0, row=0, padx=1, pady=1)
+            self.object1 = Button(self.tab3, text= "capture", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=350, y=510, width=150, height=35)
+
+            name = Label(self.tab3, text = "Username", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=760,y=105)
+            self.user = Entry(self.tab3, font=("times new roman",15), bg="white")
+            self.user.place(x=890,y=100,width=220,height=35)
+            self.panel1 = Label(self.tab1, image=final_img)#
+            logged_in = True
             # self.Login_btn.place_forget()
-            rospy.init_node('ui', anonymous=True)
-
-            publisher = rospy.Publisher('/Command', String, queue_size=1)
-            rospy.Subscriber('/Sensor', String, self.callback1)
-
-            rospy.Subscriber('/Image', sensor_msgs.msg.Image, self.callback_image)
 
 
 
@@ -148,22 +147,10 @@ class Login:
                     else:
                         self.OvalPos[i][1].itemconfig(self.OvalPos[i][0],fill='green')
 
-    def callback_image(self,data):
-        global panel
+    def callback_image1(self,data):
+        global img_data
         # Convert your ROS Image message to OpenCV2
-        cv2_img = bridge.imgmsg_to_cv2(data, "bgr8")
-        cv2_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-        cv2_img = Image.fromarray(cv2_img)
-        cv2_img = ImageTk.PhotoImage(cv2_img)
-
-        if panel is None:
-            panel = Label(self.tab1, image=cv2_img)
-            # panel.pack(side="bottom", fill="both", expand="yes")
-
-        else:
-            panel.configure(image=cv2_img)
-            panel.image = cv2_img
-            panel.grid(column=0, row=1, rowspan=25, padx=1, pady=1)
+        img_data = data
             # Save your OpenCV2 image as a jpeg
             # cv2.imshow('camera_image', cv2_img)
 
@@ -172,13 +159,92 @@ class Login:
             # if cv2.waitKey(1) & 0xFF == ord('q'):
             #     cv2.destroyAllWindows()
 
+    # def callback_image2(self,data):
+    #     global panel2
+    #     # Convert your ROS Image message to OpenCV2
+    #     cv2_img = bridge.imgmsg_to_cv2(data, "bgr8")
+    #     cv2_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+    #     cv2_img = Image.fromarray(cv2_img)
+    #     cv2_img = ImageTk.PhotoImage(cv2_img)
+    #
+    #     if panel2 is None:
+    #         panel2 = Label(self.tab3, image=cv2_img)
+    #         # panel.pack(side="bottom", fill="both", expand="yes")
+    #
+    #     else:
+    #         panel2.configure(image=cv2_img)
+    #         panel2.image = cv2_img
+    #         panel2.grid(column=5, row=1, rowspan=25, padx=1, pady=1)
+    #         # Save your OpenCV2 image as a jpeg
+    #         # cv2.imshow('camera_image', cv2_img)
+    #
+    #         # image = cv2.imread(data.data)
+    #         # cv2.imshow('keshiponk', image)
+    #         # if cv2.waitKey(1) & 0xFF == ord('q'):
+    #         #     cv2.destroyAllWindows()
+
+    def on_closing(self):
+        self._is_running = False
+
+        # self.quit()
+        # self.root.destroy()
+
+    def run(self):
+        self.root=Tk()
+        # self.root=Tk()
+        self.root.title("Login System")
+        self.root.geometry("1200x600+100+50")
+        self.root.resizable(False, False)
+        # backgound Image
+        self.bg = ImageTk.PhotoImage(file="background.jpg")
+        self.bg_image = Label(self.root, image = self.bg).place(x=0,y=0,relwidth=1,relheight=1)
+
+        #login frane
+        self.Frame_login = Frame(self.root, bg="black")
+        self.Frame_login.place(x=70,y=150,height=340,width=500)
+
+        title = Label(self.Frame_login, text="WELCOME !", font=("Impact",25,"bold"),fg="#8ddbf0", bg="black").place(x=150,y=30)
+
+        user_label = Label(self.Frame_login, text = "Username", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=90,y=100)
+        self.user = Entry(self.Frame_login, font=("times new roman",15), bg="lightgray")
+        self.user.place(x=90,y=140,width=320,height=35)
+
+        password_label = Label(self.Frame_login, text = "Password", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=90,y=190)
+        self.password = Entry(self.Frame_login, font=("times new roman",15), bg="lightgray")
+        self.password.place(x=90,y=230,width=320,height=35)
+
+        self.Login_btn = Button(self.Frame_login, command=self.login_function, text= "Log In", bg="#8ddbf0", fg="black", font=("times new roman",20)).place(x=175, y=285, width=150, height=35)
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        self.root.mainloop()
+
 
 if __name__ == '__main__':
+    app = Login()
+    rospy.init_node('ui', anonymous=True)
 
-    root = Tk()
-    obj=Login(root)
-    root.mainloop()
+    publisher = rospy.Publisher('/Command', String, queue_size=1)
+    rospy.Subscriber('/Sensor', String, app.callback1)
 
+    #feedback tab
+    rospy.Subscriber('/Image', sensor_msgs.msg.Image, app.callback_image1, queue_size=1)
+    #training tab
+    # rospy.Subscriber('/Image', sensor_msgs.msg.Image, app.callback_image2)
+
+    while app._is_running:
+        if img_data is not None and logged_in:
+            cv2_img = bridge.imgmsg_to_cv2(img_data, "bgr8")
+            cv2_img = np.array(cv2_img)
+            cv2_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+            cv2_img = Image.fromarray(cv2_img)
+            final_img = ImageTk.PhotoImage(cv2_img)
+            app.panel1.configure(image=final_img)
+            app.panel1.image = final_img
+            app.panel1.grid(column=0, row=1, rowspan=25, padx=1, pady=1)
+    print("keshiponk")
+    app.root.destroy()
+    app.terminate()
+    os.kill(os.getpid(),signal.SIGINT)
     # rate = rospy.Rate(10)
     # while not rospy.is_shutdown():
     #     info="ui"
