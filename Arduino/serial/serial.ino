@@ -33,19 +33,62 @@ void loop() {
     m4  = input.substring(commaIndex+1, secondCommaIndex);
     m3  = input.substring(secondCommaIndex+1, thirdCommaIndex);
     m2 = input.substring(thirdCommaIndex+1);
-    Serial.println(m5.toInt());
+
+    
     if (m5.toInt() > 0){
       rate = 15000/270*(m5.toInt());
       Serial.println(rate);
-//      move(motor4, false, rate, 200);
+      move(motor4, false, rate, 200);
       Serial.println("yesss");
     }
     else
     {
       rate = -1*15000/270*(m5.toInt());
       Serial.println(rate);
-//      move(motor4, true, rate, 200);
+      move(motor4, true, rate, 200);
     }
+    
+    if (m4.toInt() > 0){
+      rate = 5000/90*(m4.toInt());
+      Serial.println(rate);
+      move(motor3, true, rate, 255);
+      Serial.println("yesss");
+    }
+    else
+    {
+      rate = -1*11000/90*(m4.toInt());
+      Serial.println(rate);
+      move(motor3, false, rate, 255);
+    }
+
+    if (m3.toInt() > 0){
+      rate = 3600/90*(m3.toInt());
+      Serial.println(rate);
+      move(motor2, true, rate, 200);
+      Serial.println("yesss");
+    }
+    else
+    {
+      rate = -1*7500/90*(m3.toInt());
+      Serial.println(rate);
+      move(motor2, false, rate, 200);
+   }
+
+     if (m2.toInt() > 0){
+      digitalWrite(CW,LOW);
+      rate = 6300/120*(m2.toInt());
+      Serial.println(rate);
+      move(motor1, true, rate, 150);
+      Serial.println("yesss");
+    }
+    else
+    {
+      digitalWrite(CW,LOW);
+      rate = -1*7300/120*(m2.toInt());
+      Serial.println(rate);
+      move(motor1, false, rate, 150);
+    } 
+    
   }
 }
 
