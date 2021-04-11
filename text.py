@@ -1,20 +1,14 @@
 #! /usr/bin/env python3
 import serial
 import time
+import sys
 # create a file
-file = open("angle.txt", "r")
+file = open("angle.txt", "w")
 
-for line in file:
-  fields = line.split(",")
-  angle1 = fields[0]
-  angle2 = fields[1]
-  angle3 = fields[2]
-  angle4 = fields[3]
-
-angles = angle1 + "," + angle2 + "," + angle3 + "," + angle4
+angles = sys.argv[1] + "," + sys.argv[2] + "," + sys.argv[3] + "," + sys.argv[4] + "\n"
+file.write(angles)
 print(angles)
 arduino = serial.Serial('/dev/ttyACM0', 9600)
-while True:
-    arduino.write(angles.encode())
-    time.sleep(1)
-# arduino.close()
+
+arduino.write(angles.encode())
+time.sleep(1)

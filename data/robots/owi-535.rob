@@ -1,0 +1,33 @@
+### Robot file is formatted as a series of name-list pairs on separate lines. ###
+
+
+TParent 0 0 -1   0 1 0   1 0 0   0 0 0     \
+1 0 0   0 1 0   0 0 1   0.7 0 0    \
+1 0 0   0 1 0   0 0 1   0.9 0 0    \
+1 0 0   0 1 0   0 0 1   1.12 0 0
+
+#alpha 1.5707 0 0 0
+#a 0 0.9 1.12 1.12
+#d 0.7 0 0 0
+#theta 0 0 0 0
+
+parents -1 0 1 2
+
+axis	1 0 0 	0 1 0	0 1 0	0 1 0
+
+qDeg	45 45 45 45
+qMinDeg -135 -90 -150 -60
+qMaxDeg  135  90 150 60
+
+jointtype  r r r r
+
+geometry "owi-535/link0.off" "owi-535/link1.off" "owi-535/link2.off" "owi-535/link3.off"
+geomscale	1 1 1 1
+
+selfcollision 0 1 1 2 2 3
+noselfcollision 0 2 0 3
+
+joint normal 0
+joint normal 1
+joint normal 2
+joint normal 3

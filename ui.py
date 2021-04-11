@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 import rospy
 import cv2
 from hashlib import sha1
@@ -6,10 +6,13 @@ from cv_bridge import CvBridge, CvBridgeError
 import sensor_msgs.msg
 from std_msgs.msg import String
 from Tkinter import*
+import tkSimpleDialog as simpledialog
 import ttk
 import tkMessageBox
 import numpy as np
 import os
+import csv
+from cv2 import aruco
 
 from PIL import ImageTk, Image
 import threading
@@ -19,6 +22,7 @@ global panel2, logged_in, img_data, final_img
 logged_in = False
 panel2 = None
 final_img = None
+aruco_img = None
 img_data = None
 
 class Login(threading.Thread):
@@ -35,7 +39,7 @@ class Login(threading.Thread):
         return [oval,circleCanvas]
 
     def login_function(self):
-        global panel2, logged_in, final_img
+        global panel2, logged_in, final_img, aruco_img
         if self.user.get()=="" or self.password.get()=="":
             # tkMessageBox.showerror("Error","All fields are required", parent=self.root)
         # elif self.user.get() != "k" or self.password.get() != "1":
@@ -99,31 +103,65 @@ class Login(threading.Thread):
             # circleCanvas1.itemconfig(self.ir1,fill='red')
             ttk.Label(self.tab2, text="Command the robot to fetch the following").grid(column=0, row=0, padx=1, pady=1)
 
-            # objects = ["object1", "object2"]
-            #
-            # for i in objects:
-            #     self.objects[i] = Button(self.tab2, text=objects[i])
-            #command tab
-            self.object1 = Button(self.tab2, text= "Object 1", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=30, width=150, height=35)
-            self.object2 = Button(self.tab2, text= "Object 2", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=75, width=150, height=35)
-            self.object3 = Button(self.tab2, text= "Object 3", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=120, width=150, height=35)
-            self.object4 = Button(self.tab2, text= "Object 4", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=165, width=150, height=35)
-            self.object5 = Button(self.tab2, text= "Object 5", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=210, width=150, height=35)
-            self.object6 = Button(self.tab2, text= "Object 6", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=255, width=150, height=35)
-            self.object7 = Button(self.tab2, text= "Object 7", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=300, width=150, height=35)
+            button_y = 30
+            with open('marker.csv', 'r') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    marker_name = str(row[0])
+                    marker_id = row[1]
+                    self.object = Button(self.tab2, text=marker_name, bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=button_y, width=150, height=35)
+                    button_y += 40
+
 
             #training tab
             ttk.Label(self.tab3, text="Train your robot").grid(column=0, row=0, padx=1, pady=1)
-            self.object1 = Button(self.tab3, text= "capture", bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=350, y=510, width=150, height=35)
+            self.capture = Button(self.tab3, text= "capture", bg="#8ddbf0", fg="black", font=("times new roman",15), command=self.AddObject).place(x=350, y=510, width=150, height=35)
 
-            name = Label(self.tab3, text = "Username", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=760,y=105)
-            self.user = Entry(self.tab3, font=("times new roman",15), bg="white")
-            self.user.place(x=890,y=100,width=220,height=35)
-            self.panel1 = Label(self.tab1, image=final_img)#
+            name = Label(self.tab3, text = "Object Name", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=760,y=105)
+            self.object_name = Entry(self.tab3, font=("times new roman",15), bg="white")
+            self.object_name.place(x=900,y=100,width=220,height=35)
+            name = self.object_name.get()
+
+            self.panel1 = Label(self.tab1, image=final_img)
+            self.panel3 = Label(self.tab3, image=final_img)
+
             logged_in = True
             # self.Login_btn.place_forget()
 
+    def AddObject(self):#
+        t1 = threading.Thread(target=self.FindMarker)
+        t1.start()
 
+    def FindMarker(self):
+        while(1):
+            if aruco_img is not None:
+                corners = []
+                gray = cv2.cvtColor(aruco_img, cv2.COLOR_BGR2GRAY)
+                corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, ARUCO_DICT, parameters=ARUCO_PARAMETERS)
+
+                if corners != []:
+                    print(ids[0][0])
+                    #
+                    # input = Toplevel()
+                    # input.title("Enter obj name")
+                    # input.grab_set()
+                    # input.focus_force()
+                    # input.attributes('-topmost', True)
+                    #
+                    # name = Label(input, text = "Object Name", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=760,y=105)
+                    # objectname = Entry(input, font=("times new roman",15), bg="white")
+                    # objectname.place(x=900,y=100,width=220,height=35)
+                    # name = objectname.get()
+                    #name_input = simpledialog.askstring(title="Add Object", prompt="Enter object name",parent=self.input)
+
+                    # input.iconify()
+                    # input.deiconify()
+                    f = open("marker.csv", "a")
+                    f.write("{:s},{:d}\n".format(simpledialog.askstring(title="Add Object", prompt="Enter object name",parent=self.root),ids[0][0]))
+                    f.close()
+                    return
+                else:
+                    pass #fer error pop-up
 
     def callback1(self,data):
         msg = data.data
@@ -231,16 +269,33 @@ if __name__ == '__main__':
     #training tab
     # rospy.Subscriber('/Image', sensor_msgs.msg.Image, app.callback_image2)
 
+    ARUCO_PARAMETERS = aruco.DetectorParameters_create()
+    ARUCO_DICT = aruco.Dictionary_get(aruco.DICT_6X6_250)
+
     while app._is_running:
         if img_data is not None and logged_in:
             cv2_img = bridge.imgmsg_to_cv2(img_data, "bgr8")
             cv2_img = np.array(cv2_img)
+            aruco_img = cv2_img
             cv2_img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
             cv2_img = Image.fromarray(cv2_img)
             final_img = ImageTk.PhotoImage(cv2_img)
             app.panel1.configure(image=final_img)
             app.panel1.image = final_img
             app.panel1.grid(column=0, row=1, rowspan=25, padx=1, pady=1)
+
+            app.panel3.configure(image=final_img)
+            app.panel3.image = final_img
+            app.panel3.grid(column=0, row=1, rowspan=25, padx=1, pady=1)
+
+            # if aruco_img is not None:
+            #     corners = []
+            #     print(corners)
+            #     gray = cv2.cvtColor(aruco_img, cv2.COLOR_BGR2GRAY)
+            #     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, ARUCO_DICT, parameters=ARUCO_PARAMETERS)
+            #
+            #     if corners != []:
+            #         print("detected")
     print("keshiponk")
     app.root.destroy()
     app.terminate()
