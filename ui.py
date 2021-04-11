@@ -6,9 +6,9 @@ from cv_bridge import CvBridge, CvBridgeError
 import sensor_msgs.msg
 from std_msgs.msg import String
 from Tkinter import*
+import tkMessageBox
 import tkSimpleDialog as simpledialog
 import ttk
-import tkMessageBox
 import numpy as np
 import os
 import csv
@@ -103,24 +103,23 @@ class Login(threading.Thread):
             # circleCanvas1.itemconfig(self.ir1,fill='red')
             ttk.Label(self.tab2, text="Command the robot to fetch the following").grid(column=0, row=0, padx=1, pady=1)
 
-            button_y = 30
+            self.button_y = 30
             with open('marker.csv', 'r') as file:
                 reader = csv.reader(file)
                 for row in reader:
                     marker_name = str(row[0])
                     marker_id = row[1]
-                    self.object = Button(self.tab2, text=marker_name, bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=button_y, width=150, height=35)
-                    button_y += 40
+                    self.object = Button(self.tab2, text=marker_name, bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=self.button_y, width=150, height=35)
+                    self.button_y += 40
 
 
             #training tab
             ttk.Label(self.tab3, text="Train your robot").grid(column=0, row=0, padx=1, pady=1)
-            self.capture = Button(self.tab3, text= "capture", bg="#8ddbf0", fg="black", font=("times new roman",15), command=self.AddObject).place(x=350, y=510, width=150, height=35)
+            self.capture = Button(self.tab3, text= "capture", bg="#8ddbf0", fg="black", font=("times new roman",15), command=self.AddObject).place(x=450, y=510, width=150, height=35)
 
-            name = Label(self.tab3, text = "Object Name", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=760,y=105)
+            name = Label(self.tab3, text = "Object Name", font=("Goudy old style", 15), fg="#8ddbf0", bg="black").place(x=50,y=512)
             self.object_name = Entry(self.tab3, font=("times new roman",15), bg="white")
-            self.object_name.place(x=900,y=100,width=220,height=35)
-            name = self.object_name.get()
+            self.object_name.place(x=200,y=510,width=220,height=35)
 
             self.panel1 = Label(self.tab1, image=final_img)
             self.panel3 = Label(self.tab3, image=final_img)
@@ -128,12 +127,12 @@ class Login(threading.Thread):
             logged_in = True
             # self.Login_btn.place_forget()
 
-    def AddObject(self):#
+    def AddObject(self):
         t1 = threading.Thread(target=self.FindMarker)
         t1.start()
 
     def FindMarker(self):
-        while(1):
+        #while(1):
             if aruco_img is not None:
                 corners = []
                 gray = cv2.cvtColor(aruco_img, cv2.COLOR_BGR2GRAY)
@@ -156,12 +155,17 @@ class Login(threading.Thread):
 
                     # input.iconify()
                     # input.deiconify()
+                    Name = str(self.object_name.get())
+                    print(Name)
                     f = open("marker.csv", "a")
-                    f.write("{:s},{:d}\n".format(simpledialog.askstring(title="Add Object", prompt="Enter object name",parent=self.root),ids[0][0]))
+                    #f.write("{:s},{:d}\n".format(simpledialog.askstring(title="Add Object", prompt="Enter object name",parent=self.root),ids[0][0]))
+                    f.write("{:s},{:d}\n".format(Name,ids[0][0]))
                     f.close()
+                    self.object = Button(self.tab2, text=Name, bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=self.button_y, width=150, height=35)
                     return
                 else:
-                    pass #fer error pop-up
+
+                    tkMessageBox.showerror("error", "No marker detected", parent=self.root)
 
     def callback1(self,data):
         msg = data.data
