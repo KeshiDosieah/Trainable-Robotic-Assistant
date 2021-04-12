@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <world>
     <!-- the robot -->
-    <robot name="OWI-535" file="Klampt-examples/data/robots/owi-535.rob" />
-    <!-- <robot name="OWI-535" file="Klampt-examples/data/robots/planar3R.rob" /> -->
+    <robot name="OWI-535" file="data/robots/owi-535.rob" />
+    <!-- <robot name="OWI-535" file="data/robots/planar3R.rob" /> -->
     <!-- the ground plane -->
-    <terrain file="Klampt-examples/data/terrains/world.off" />
+    <terrain file="data/terrains/world.off" />
 </world>

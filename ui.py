@@ -13,12 +13,15 @@ import numpy as np
 import os
 import csv
 from cv2 import aruco
+import serial
+import sys
+import time
 
 from PIL import ImageTk, Image
 import threading
 
 bridge = CvBridge()
-global panel2, logged_in, img_data, final_img
+publisher = None
 logged_in = False
 panel2 = None
 final_img = None
@@ -108,8 +111,7 @@ class Login(threading.Thread):
                 reader = csv.reader(file)
                 for row in reader:
                     marker_name = str(row[0])
-                    marker_id = row[1]
-                    self.object = Button(self.tab2, text=marker_name, bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=self.button_y, width=150, height=35)
+                    Button(self.tab2, text= marker_name, bg="#8ddbf0", fg="black", font=("times new roman",15), command=lambda j=marker_name: self.FetchObject(j)).place(x=10, y=self.button_y, width=150, height=35)
                     self.button_y += 40
 
 
@@ -161,11 +163,26 @@ class Login(threading.Thread):
                     #f.write("{:s},{:d}\n".format(simpledialog.askstring(title="Add Object", prompt="Enter object name",parent=self.root),ids[0][0]))
                     f.write("{:s},{:d}\n".format(Name,ids[0][0]))
                     f.close()
-                    self.object = Button(self.tab2, text=Name, bg="#8ddbf0", fg="black", font=("times new roman",15)).place(x=10, y=self.button_y, width=150, height=35)
+                    self.object = Button(self.tab2, text=Name, bg="#8ddbf0", fg="black", font=("times new roman",15), command=lambda j=Name: self.FetchObject(j)).place(x=10, y=self.button_y, width=150, height=35)
+                    tkMessageBox.showinfo("Success","Object successfully added to database", parent=self.root)
                     return
                 else:
-
                     tkMessageBox.showerror("error", "No marker detected", parent=self.root)
+
+    def FetchObject(self,name):
+        global publisher
+        with open('marker.csv', 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                marker_name = str(row[0])
+                id = row[1]
+                if (marker_name == name):
+                    break;
+        print(id)
+        publisher.publish(id)
+
+
+
 
     def callback1(self,data):
         msg = data.data
