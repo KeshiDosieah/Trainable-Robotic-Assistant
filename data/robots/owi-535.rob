@@ -16,7 +16,7 @@ parents -1 0 1 2
 axis	1 0 0 	0 1 0	0 1 0	0 1 0
 
 qDeg	45 45 45 45
-qMinDeg -135 -90 -150 -60
+qMinDeg -135 -90 0 -60
 qMaxDeg  135  90 150 60
 
 jointtype  r r r r
